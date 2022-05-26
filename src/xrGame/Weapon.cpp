@@ -1803,7 +1803,7 @@ void CWeapon::OnZoomIn()
 
 void CWeapon::OnZoomOut()
 {
-	if (!bIsSecondVPZoomPresent() && psActorFlags.test(AF_3DSCOPE_ENABLE))
+	if (!bIsSecondVPZoomPresent() || !psActorFlags.test(AF_3DSCOPE_ENABLE))
 		m_fRTZoomFactor = GetZoomFactor(); // Сохраняем текущий динамический зум
 	m_zoom_params.m_bIsZoomModeNow = false;
 	SetZoomFactor(g_fov);
