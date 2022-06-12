@@ -364,7 +364,7 @@ void attachable_hud_item::load(const shared_str& sect_name)
 	m_measures.load				(sect_name, m_model);
 }
 
-u32 attachable_hud_item::anim_play(const shared_str& anm_name_b, BOOL bMixIn, const CMotionDef*& md, u8& rnd_idx)
+u32 attachable_hud_item::anim_play(const shared_str& anm_name_b, BOOL bMixIn, const CMotionDef*& md, u8& rnd_idx, bool wpn_mix)
 {
 	float speed				= CalcMotionSpeed(anm_name_b);
 
@@ -382,6 +382,8 @@ u32 attachable_hud_item::anim_play(const shared_str& anm_name_b, BOOL bMixIn, co
 
 	u32 ret					= g_player_hud->anim_play(m_attach_place_idx, M.mid, bMixIn, md, speed);
 	
+	BOOL wpn_blend = wpn_mix ? bMixIn : FALSE;
+
 	if(m_model->dcast_PKinematicsAnimated())
 	{
 		IKinematicsAnimated* ka			= m_model->dcast_PKinematicsAnimated();
@@ -409,7 +411,7 @@ u32 attachable_hud_item::anim_play(const shared_str& anm_name_b, BOOL bMixIn, co
 		u16 pc							= ka->partitions().count();
 		for(u16 pid=0; pid<pc; ++pid)
 		{
-			CBlend* B					= ka->PlayCycle(pid, M2, bMixIn);
+			CBlend* B					= ka->PlayCycle(pid, M2, wpn_blend);
 			R_ASSERT					(B);
 			B->speed					*= speed;
 		}

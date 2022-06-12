@@ -175,29 +175,11 @@ protected:
 	virtual void	PlayAnimIdleSprint	();
 	virtual void	PlayAnimIdleMoving	();
 
-	virtual void    SetAnimFlag(u32 flag, LPCSTR anim_name);
+	xr_unordered_map<LPCSTR, bool> psAnimationList;
 
-	// Флаги наличия анимаций, будем их искать заранее, так будет намного проще мейби
-	enum {
-		ANM_SHOW_EMPTY       = (1 << 0),
-		ANM_HIDE_EMPTY       = (1 << 1),
-		ANM_AIM_EMPTY        = (1 << 2),
-		ANM_BORE_EMPTY		 = (1 << 3),
-		ANM_SHOT_EMPTY		 = (1 << 4),
-		ANM_SPRINT_EMPTY	 = (1 << 5),
-		ANM_MOVING_EMPTY	 = (1 << 6),
-		ANM_RELOAD_EMPTY	 = (1 << 7),
-		ANM_RELOAD_EMPTY_GL  = (1 << 8),
-		ANM_SHOT_AIM		 = (1 << 9),
-		ANM_SHOT_AIM_GL		 = (1 << 10),
-		ANM_MISFIRE			 = (1 << 11),
-		ANM_MISFIRE_GL		 = (1 << 12),
-		ANM_IDLE_EMPTY		 = (1 << 13),
-	};
+	bool CheckAnimationExist(LPCSTR anim_name);
 
-	
-
-	Flags32 psWpnAnimsFlag;
+	void ReloadAnimationsExist();
 
 	bool WeaponSoundExist(LPCSTR section, LPCSTR sound_name) const;
 

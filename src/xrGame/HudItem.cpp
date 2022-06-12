@@ -282,9 +282,9 @@ void CHudItem::on_a_hud_attach()
 	}
 }
 
-u32 CHudItem::PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem*  W, u32 state)
+u32 CHudItem::PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem*  W, u32 state, bool bWpn)
 {
-	u32 anim_time					= PlayHUDMotion_noCB(M, bMixIn);
+	u32 anim_time					= PlayHUDMotion_noCB(M, bMixIn, bWpn);
 	if (anim_time>0)
 	{
 		m_bStopAtEndAnimIsRunning	= true;
@@ -297,7 +297,6 @@ u32 CHudItem::PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem*  W, u32 
 
 	return anim_time;
 }
-
 
 //AVO: check if animation exists
 bool CHudItem::isHUDAnimationExist(LPCSTR anim_name)
@@ -322,7 +321,7 @@ bool CHudItem::isHUDAnimationExist(LPCSTR anim_name)
 }
 
 
-u32 CHudItem::PlayHUDMotion_noCB(const shared_str& motion_name, BOOL bMixIn)
+u32 CHudItem::PlayHUDMotion_noCB(const shared_str& motion_name, BOOL bMixIn, bool bWpn)
 {
 	m_current_motion					= motion_name;
 
@@ -337,7 +336,7 @@ u32 CHudItem::PlayHUDMotion_noCB(const shared_str& motion_name, BOOL bMixIn)
 	}
 	if( HudItemData() )
 	{
-		return HudItemData()->anim_play		(motion_name, bMixIn, m_current_motion_def, m_started_rnd_anim_idx);
+		return HudItemData()->anim_play		(motion_name, bMixIn, m_current_motion_def, m_started_rnd_anim_idx, bWpn);
 	}else
 	{
 		m_started_rnd_anim_idx				= 0;

@@ -33,11 +33,7 @@ void CWeaponMagazinedWGrenade::Load	(LPCSTR section)
 {
 	inherited::Load			(section);
 	CRocketLauncher::Load	(section);
-	
-	SetAnimFlag(ANM_RELOAD_EMPTY_GL, "anm_reload_empty_w_gl");
-	SetAnimFlag(ANM_SHOT_AIM_GL,"anm_shots_w_gl_when_aim");
-	SetAnimFlag(ANM_MISFIRE_GL,"anm_reload_misfire_w_gl");
-	
+
 	//// Sounds
 	m_sounds.LoadSound(section,"snd_shoot_grenade"	, "sndShotG"		, false, m_eSoundShot);
 	m_sounds.LoadSound(section,"snd_reload_grenade"	, "sndReloadG"	, true, m_eSoundReload);
@@ -624,7 +620,7 @@ void CWeaponMagazinedWGrenade::PlayAnimReload()
 
 	if (IsGrenadeLauncherAttached())
 	{
-		if (iAmmoElapsed == 0 && psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL))
+		if (iAmmoElapsed == 0 && CheckAnimationExist("anm_reload_empty_w_gl"))
 			PlayHUDMotion("anm_reload_empty_w_gl", TRUE, this, GetState());
 		else
 			PlayHUDMotion("anm_reload_w_gl", TRUE, this, GetState());
@@ -706,7 +702,7 @@ void CWeaponMagazinedWGrenade::PlayAnimShoot()
 		VERIFY(GetState()==eFire);
 		if (IsGrenadeLauncherAttached())
 		{
-			if (IsZoomed() && psWpnAnimsFlag.test(ANM_SHOT_AIM_GL) && IsScopeAttached())
+			if (IsZoomed() && CheckAnimationExist("anm_shots_w_gl_when_aim") && IsScopeAttached())
 				PlayHUDMotion("anm_shots_w_gl_when_aim", FALSE, this, GetState());
 			else
 				PlayHUDMotion("anm_shots_w_gl", FALSE, this, GetState());
@@ -1017,16 +1013,16 @@ void CWeaponMagazinedWGrenade::switch2_Unmis()
 	{
 		if (m_sounds_enabled)
 		{
-			if (m_sounds.FindSoundItem("sndReloadMisfire", false) && psWpnAnimsFlag.test(ANM_MISFIRE_GL))
+			if (m_sounds.FindSoundItem("sndReloadMisfire", false) && CheckAnimationExist("anm_reload_misfire_w_gl"))
 				PlaySound("sndReloadMisfire", get_LastFP());
-			else if (m_sounds.FindSoundItem("sndReloadEmpty", false) && psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL))
+			else if (m_sounds.FindSoundItem("sndReloadEmpty", false) && CheckAnimationExist("anm_reload_empty_w_gl"))
 				PlaySound("sndReloadEmpty", get_LastFP());
 			else
 				PlaySound("sndReload", get_LastFP());
 		}
-		if (psWpnAnimsFlag.test(ANM_MISFIRE_GL))
+		if (CheckAnimationExist("anm_reload_misfire_w_gl"))
 			PlayHUDMotion("anm_reload_misfire_w_gl", TRUE, this, GetState());
-		else if (psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL))
+		else if (CheckAnimationExist("anm_reload_empty_w_gl"))
 			PlayHUDMotion("anm_reload_empty_w_gl", TRUE, this, GetState());
 		else
 			PlayHUDMotion("anm_reload_w_gl", TRUE, this, GetState());
@@ -1043,11 +1039,11 @@ void CWeaponMagazinedWGrenade::CheckMagazine()
 		return;
 	}
 
-	if ((psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL) || psWpnAnimsFlag.test(ANM_RELOAD_EMPTY)) && iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
+	if ((CheckAnimationExist("anm_reload_empty_w_gl") || CheckAnimationExist("anm_reload_empty")) && iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
 	{
 		m_bNeedBulletInGun = true;
 	}
-	else if ((psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL) || psWpnAnimsFlag.test(ANM_RELOAD_EMPTY)) && iAmmoElapsed == 0 && m_bNeedBulletInGun == true)
+	else if ((CheckAnimationExist("anm_reload_empty_w_gl") || CheckAnimationExist("anm_reload_empty")) && iAmmoElapsed == 0 && m_bNeedBulletInGun == true)
 	{
 		m_bNeedBulletInGun = false;
 	}
