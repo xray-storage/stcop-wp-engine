@@ -219,8 +219,8 @@ void CWeapon::Hit(SHit* pHDS)
 
 void CWeapon::UpdateXForm()
 {
-	if (Device.dwFrame == dwXF_Frame)
-		return;
+	//if (Device.dwFrame == dwXF_Frame)
+		//return;
 
 	dwXF_Frame = Device.dwFrame;
 
@@ -258,8 +258,7 @@ void CWeapon::UpdateXForm()
 	if ((HandDependence() == hd1Hand) || (GetState() == eReload) || (!E->g_Alive()))
 		boneL = boneR2;
 
-	V->CalculateBones_Invalidate();
-	V->CalculateBones(TRUE);
+	V->CalculateBones();
 	
 	Fmatrix& mL = V->LL_GetTransform(u16(boneL));
 	Fmatrix& mR = V->LL_GetTransform(u16(boneR));
