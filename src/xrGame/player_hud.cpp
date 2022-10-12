@@ -172,7 +172,10 @@ void attachable_hud_item::update(bool bForce)
 	m_attach_offset.translate_over	(m_measures.m_item_attach[0]);
 
 	m_parent->calc_transform		(m_attach_place_idx, m_attach_offset, m_item_transform);
-	m_parent_hud_item->UpdateAddonsTransform(true); // FFT++
+
+	m_parent_hud_item->UpdateAddonsSlotTransform(); //
+	m_parent_hud_item->UpdateAddonsTransform(); //
+
 	m_upd_firedeps_frame			= Device.dwFrame;
 
 	IKinematicsAnimated* ka			=	m_model->dcast_PKinematicsAnimated();
@@ -248,6 +251,7 @@ void attachable_hud_item::render()
 	::Render->add_Visual		(m_model->dcast_RenderVisual());
 	debug_draw_firedeps			();
 	m_parent_hud_item->render_hud_mode();
+	m_parent_hud_item->UpdateAddonsVisual();
 }
 
 bool attachable_hud_item::render_item_ui_query()
@@ -630,6 +634,7 @@ void player_hud::update(const Fmatrix& cam_trans)
 
 	if(m_attached_items[1])
 		m_attached_items[1]->update(true);
+
 }
 
 u32 player_hud::anim_play(u16 part, const MotionID& M, BOOL bMixIn, const CMotionDef*& md, float speed)
@@ -662,7 +667,6 @@ void player_hud::update_additional	(Fmatrix& trans)
 	if(m_attached_items[1])
 		m_attached_items[1]->update_hud_additional(trans);
 }
-
 
 void player_hud::update_inertion(Fmatrix& trans)
 {

@@ -93,7 +93,7 @@ struct attachable_hud_item
 	void update						(bool bForce);
 	void update_hud_additional		(Fmatrix& trans);
 	void setup_firedeps				(firedeps& fd);
-	void render						();	
+	void render						();
 	void render_item_ui				();
 	bool render_item_ui_query		();
 	bool need_renderable			();

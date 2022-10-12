@@ -1448,6 +1448,39 @@ struct CCC_TimeFactorSingle : public CCC_Float {
 #include "attachment_owner.h"
 #include "InventoryOwner.h"
 #include "Inventory.h"
+
+class CCC_Tune3rdPerson_HudItem : public IConsole_Command
+{
+public:
+	CCC_Tune3rdPerson_HudItem(LPCSTR N) :IConsole_Command(N) {};
+	virtual void	Execute(LPCSTR args)
+	{
+		if (CAttachableItem::m_dbgItem) {
+			CAttachableItem::m_dbgItem = NULL;
+			Msg("CCC_TuneAttachableItem switched to off");
+			return;
+		};
+		CObject* obj = Level().CurrentViewEntity();	VERIFY(obj);
+		CAttachmentOwner* owner = smart_cast<CAttachmentOwner*>(obj);
+
+		CInventoryOwner* iowner = smart_cast<CInventoryOwner*>(obj);
+		PIItem active_item = iowner->m_inventory->ActiveItem();
+		if (active_item)
+			CAttachableItem::m_dbgItem = active_item->cast_attachable_item();
+
+		if (CAttachableItem::m_dbgItem)
+			Msg("CCC_TuneAttachableItem switched to ON for [%s]", active_item->object().cNameSect().c_str());
+		else
+			Msg("CCC_TuneAttachableItem cannot find attached item");
+	}
+
+	virtual void	Info(TInfo& I)
+	{
+		xr_sprintf(I, "allows to change bind rotation and position offsets for attached item, <section_name> given as arguments");
+	}
+};
+
+
 class CCC_TuneAttachableItem : public IConsole_Command
 {
 public:
@@ -2023,6 +2056,8 @@ CMD4(CCC_Integer,			"hit_anims_tune",						&tune_hit_anims,		0, 1);
 	CMD3(CCC_Mask,		"g_dynamic_music",		&psActorFlags,	AF_DYNAMIC_MUSIC);
 	CMD3(CCC_Mask,		"g_important_save",		&psActorFlags,	AF_IMPORTANT_SAVE);
 	CMD1(CCC_TuneAttachableItem, "dbg_adjust_attachable_item");
+	CMD1(CCC_Tune3rdPerson_HudItem, "dbg_adjust_3rd_person_item");
+
 	
 #ifdef DEBUG
 	CMD1(CCC_LuaHelp,				"lua_help");

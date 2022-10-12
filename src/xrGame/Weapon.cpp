@@ -124,7 +124,7 @@ void CWeapon::UpdateAltScope()
 
 	shared_str sectionNeedLoad;
 
-	sectionNeedLoad = IsScopeAttached() ? GetNameWithAttachment() : m_section_id;
+	sectionNeedLoad = IsScopeAttached() ? GetNameWithAttachmentScope() : m_section_id;
 
 	if (!pSettings->section_exist(sectionNeedLoad))
 		return;
@@ -152,8 +152,11 @@ bool CWeapon::bChangeNVSecondVPStatus()
 
 	return true;
 }
+shared_str CWeapon::GetNameWithAttachmentSilencer()
+{
 
-shared_str CWeapon::GetNameWithAttachment()
+}
+shared_str CWeapon::GetNameWithAttachmentScope()
 {
 	string64 str;
 	if (pSettings->line_exist(m_section_id.c_str(), "parent_section"))
@@ -170,40 +173,12 @@ shared_str CWeapon::GetNameWithAttachment()
 
 int CWeapon::GetScopeX()
 {
-	if (bUseAltScope)
-	{
-		if (m_eScopeStatus != ALife::eAddonPermanent && IsScopeAttached())
-		{
-			return pSettings->r_s32(GetNameWithAttachment(), "scope_x");
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		return pSettings->r_s32(m_scopes[m_cur_scope], "scope_x");
-	}
+	return bUseAltScope ? (m_eScopeStatus != ALife::eAddonPermanent && IsScopeAttached()) ? pSettings->r_s32(GetNameWithAttachmentScope(), "scope_x") : 0 : pSettings->r_s32(m_scopes[m_cur_scope], "scope_x");
 }
 
 int CWeapon::GetScopeY()
 {
-	if (bUseAltScope)
-	{
-		if (m_eScopeStatus != ALife::eAddonPermanent && IsScopeAttached())
-		{
-			return pSettings->r_s32(GetNameWithAttachment(), "scope_y");
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		return pSettings->r_s32(m_scopes[m_cur_scope], "scope_y");
-	}
+	return bUseAltScope ? (m_eScopeStatus != ALife::eAddonPermanent && IsScopeAttached()) ? pSettings->r_s32(GetNameWithAttachmentScope(), "scope_y") : 0 : pSettings->r_s32(m_scopes[m_cur_scope], "scope_y");
 }
 
 CWeapon::~CWeapon()
@@ -644,6 +619,26 @@ void CWeapon::LoadModParams(LPCSTR section)
 	//--> (Data 2)
 	m_strafe_offset[3][0].set(fStrafeCamLFactor, fStrafeMinAngle, NULL); // normal
 	m_strafe_offset[3][1].set(fStrafeCamLFactor_aim, fStrafeMinAngle_aim, NULL); // aim-GL
+
+	LPCSTR S = READ_IF_EXISTS(pSettings, r_string, section, "hud_slots", "");
+
+	//if (S && S[0])
+	//{
+	//	string128		hud_slot;
+	//	int				count = _GetItemCount(S);
+	//	for (int it = 0; it < count; ++it)
+	//	{
+	//		_GetItem(S, it, hud_slot);
+
+	//		addone_hud_slot* addon_slot = xr_new<addone_hud_slot>(hud_slot);
+
+	//		//addon_slot->m_slot_name = pSettings->r_string(hud_slot, "slot_name");
+	//		//addon_slot->pos = pSettings->r_fvector3(hud_slot, "pos");
+	//		//addon_slot->rot = pSettings->r_fvector3(hud_slot, "rot");
+
+	//		m_HUD_addon_slots.push_back(*addon_slot);
+	//	}
+	//}
 }
 
 bool CWeapon::bReloadSectionScope(LPCSTR section)
@@ -1180,6 +1175,13 @@ void CWeapon::renderable_Render()
 {
 	UpdateXForm();
 
+	for (auto mesh : m_BAS_addons)
+	{
+		//mesh->UpdateRenderPos(Visual(), false, XFORM());
+		//mesh->Render(false);
+		if (!mesh->m_UseWorldModel) mesh->Update_And_Render_World(Visual(), XFORM());
+	}
+
 	//нарисовать подсветку
 
 	RenderLight();
@@ -1594,6 +1596,7 @@ void CWeapon::UpdateHUDAddonsVisibility()
 		if (m_eGrenadeLauncherStatus == ALife::eAddonPermanent)
 			HudItemData()->set_bone_visible(wpn_grenade_launcher, TRUE, TRUE);
 
+	UpdateAddonsHudParams();
 }
 void CWeapon::HUD_VisualBulletUpdate(bool force, int force_idx)
 {
@@ -1691,6 +1694,7 @@ void CWeapon::UpdateAddonsVisibility()
 
 void CWeapon::InitAddons()
 {
+	
 }
 
 float CWeapon::CurrentZoomFactor()
@@ -2550,14 +2554,19 @@ u8 CWeapon::GetCurrentHudOffsetIdx()
 		(!IsZoomed() && m_zoom_params.m_fZoomRotationFactor > 0.f));
 
 	if (!b_aiming)
-		return		0;
+		return	0;
 	else
-		return		1;
+		return	1;
 }
 
 void CWeapon::render_hud_mode()
 {
 	RenderLight();
+
+	for (auto mesh : m_BAS_addons)
+	{
+		mesh->Render(true);
+	}
 }
 
 bool CWeapon::MovingAnimAllowedNow()
@@ -2715,10 +2724,31 @@ void CWeapon::UpdateAddonsHudParams()
 
 }
 
-
-void CWeapon::UpdateAddonsTransform(bool for_hud)
+void CWeapon::UpdateAddonsSlotTransform()
 {
+	/*for (auto &it : m_HUD_addon_slots)
+	{
+		u16 bone_id = HudItemData()->m_model->LL_BoneID(it.m_bone_name);
+		Fmatrix m_temp = HudItemData()->m_model->LL_GetTransform(bone_id);
+		m_temp.mulB_43(it.m_attach_matrix());
+		it.m_current_pos.set(m_temp);
+	}*/
+}
 
+void CWeapon::UpdateAddonsVisual()
+{
+	
+}
+
+void CWeapon::UpdateAddonsTransform()
+{
+	for (auto& mesh : m_BAS_addons)
+	{
+		if (HudItemData())
+		{
+			mesh->UpdateRenderPos(HudItemData()->m_model->dcast_RenderVisual(), true, HudItemData()->m_item_transform);
+		}
+	}
 }
 
 void CWeapon::SaveAttachableParams()

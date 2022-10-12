@@ -24,6 +24,40 @@ class CUIWindow;
 class CBinocularsVision;
 class CNightVisionEffector;
 
+class Bas_Addon
+{
+public:
+	Bas_Addon();
+	~Bas_Addon() {};
+	IRenderVisual* hud_model;
+	IRenderVisual* world_model;
+	Fmatrix		   m_renderPosHud;	  //Текущая позиция для рендеринга
+	Fmatrix		   m_renderPosWorld;
+
+	xr_vector<Bas_Addon*> m_childs;
+
+	shared_str	 m_boneNameHUD;	  //позиция кости которая будет использоваться для аттача, если пусто то аттачим к кости wpn_body
+	shared_str	 m_boneNameWORLD;	  //
+
+	bool		 m_AttachWorldToMainBody;
+	bool         m_UseWorldModel;
+
+	shared_str   m_meshHUDName;   //путь до меша
+	shared_str   m_meshName;      //путь до меша
+
+	shared_str   m_sectionId;	  //название секции
+	shared_str   m_sectionParent; //название секции-родителя, если пусто то будет использоваться основная модель худа
+
+	bool isRoot;
+	Bas_Addon* CreateAddon(shared_str parent, xr_vector<Bas_Addon*>& m_attaches);
+	bool FindParentAndAttach(xr_vector<Bas_Addon*>& m_attaches);
+	void UpdateRenderPos(IRenderVisual* model, bool hud, Fmatrix parent);
+	void Update_And_Render_World(IRenderVisual* model, Fmatrix parent);
+	void PrepareRender(bool hud);
+	void Load(shared_str section);
+	void Render(bool hud);
+};
+
 class CWeapon : public CHudItemObject,
 	public CShootingObject
 {
@@ -35,30 +69,32 @@ public:
 	virtual					~CWeapon();
 
 	// аддоны и управление аддонами
-	bool			bUseAltScope;
-	bool			bScopeIsHasTexture;
-	bool            bNVsecondVPavaible;
-	bool            bNVsecondVPstatus;
+	bool					bUseAltScope;
+	bool					bScopeIsHasTexture;
+	bool					bNVsecondVPavaible;
+	bool					bNVsecondVPstatus;
 
 
 	virtual	bool			bInZoomRightNow() const { return m_zoom_params.m_fZoomRotationFactor > 0.05; }
 	IC		bool			bIsSecondVPZoomPresent() const { return GetSecondVPZoomFactor() > 0.000f; }
-	bool			bLoadAltScopesParams(LPCSTR section);
-	bool            bReloadSectionScope(LPCSTR section);
+	bool					bLoadAltScopesParams(LPCSTR section);
+	bool					bReloadSectionScope(LPCSTR section);
 	virtual	bool            bMarkCanShow() { return IsZoomed(); }
-	bool            bChangeNVSecondVPStatus();
+	bool					bChangeNVSecondVPStatus();
 
-	virtual void			UpdateAddonsTransform(bool for_hud = false); // FFT++
-	virtual void			UpdateAddonsHudParams(); // FFT++
+	virtual void			UpdateAddonsTransform(); //
+	virtual void			UpdateAddonsSlotTransform(); //
+	virtual void			UpdateAddonsVisual(); //
+	virtual void			UpdateAddonsHudParams(); //
 
 	virtual void			UpdateSecondVP(bool bInGrenade = false);
-	void			LoadModParams(LPCSTR section);
-	void			Load3DScopeParams(LPCSTR section);
-	void			LoadOriginalScopesParams(LPCSTR section);
-	void			LoadCurrentScopeParams(LPCSTR section);
-	virtual void	GetZoomData(const float scope_factor, float& delta, float& min_zoom_factor);
-	void			ZoomDynamicMod(bool bIncrement, bool bForceLimit);
-	void			UpdateAltScope();
+	void					LoadModParams(LPCSTR section);
+	void					Load3DScopeParams(LPCSTR section);
+	void					LoadOriginalScopesParams(LPCSTR section);
+	void					LoadCurrentScopeParams(LPCSTR section);
+	virtual void			GetZoomData(const float scope_factor, float& delta, float& min_zoom_factor);
+	void					ZoomDynamicMod(bool bIncrement, bool bForceLimit);
+	void					UpdateAltScope();
 
 
 	// Up
@@ -68,15 +104,19 @@ public:
 	int last_hide_bullet;
 	bool bHasBulletsToHide;
 
+	xr_vector<Bas_Addon*> m_BAS_addons;
+
+
 	virtual void HUD_VisualBulletUpdate(bool force = false, int force_idx = -1);
 
-	virtual float			GetControlInertionFactor() const;
-	IC		float			GetZRotatingFactor()    const { return m_zoom_params.m_fZoomRotationFactor; }
+	virtual float	GetControlInertionFactor() const;
+	IC		float	GetZRotatingFactor()    const { return m_zoom_params.m_fZoomRotationFactor; }
 	float			GetSecondVPZoomFactor() const;
 	float			GetHudFov();
 	float			GetSecondVPFov() const;
 
-	shared_str		GetNameWithAttachment();
+	shared_str			GetNameWithAttachmentScope();
+	shared_str			GetNameWithAttachmentSilencer();
 
 
 	float			m_fScopeInertionFactor;

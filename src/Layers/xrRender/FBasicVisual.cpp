@@ -41,9 +41,8 @@ void dxRender_Visual::Release		()
 
 void dxRender_Visual::Load		(const char* N, IReader *data, u32 )
 {
-#ifdef DEBUG
+
 	dbg_name	= N;
-#endif
 
 	// header
 	VERIFY		(data);

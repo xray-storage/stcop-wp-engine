@@ -1216,12 +1216,21 @@ void CWeaponMagazined::InitAddons()
 
 	ReloadAnimationsExist();
 
+	m_BAS_addons.clear();
+
 	if ( IsScopeAttached() )
 	{
 		if ( m_eScopeStatus == ALife::eAddonAttachable )
 		{
 			LoadCurrentScopeParams(GetScopeName().c_str());
+
+			if (pSettings->line_exist(GetNameWithAttachmentScope(), "addon_hud_visual"))
+			{
+				Bas_Addon* scope = Bas_Addon().CreateAddon(GetNameWithAttachmentScope(), m_BAS_addons);
+			}
 		}
+
+		
 	}
 	else
 	{

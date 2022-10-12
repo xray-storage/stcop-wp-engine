@@ -36,7 +36,9 @@
 
 extern u32 hud_adj_mode;
 extern u32 hud_adj_item_idx;
-extern u8 hud_addon_index;
+//extern u32 hud_adj_adv;
+//extern u32 hud_adj_addon_idx;
+//extern u32 hud_adj_slot_idx;
 void CActor::IR_OnKeyboardPress(int cmd)
 {
 	if (hud_adj_mode && pInput->iGetAsyncKeyState(DIK_LSHIFT))
@@ -263,46 +265,80 @@ void CActor::set_addon_for_adjust(bool up)
 
 	if (!wpn) return;
 
-	if (wpn->addons_attached.empty() || wpn->addons_attached.size() == 1) return;
+	if (hud_adj_adv == 1)
+	{
+		if (wpn->m_HUD_addons.size() < 2) return;
 
-	if (up)
-	{
-		if (hud_addon_index + 1 < wpn->addons_attached.size())
-			hud_addon_index++;
-		else 
-			hud_addon_index = 0;
-	}
-	else
-	{
-		if (hud_addon_index - 1 >= 0)
-			hud_addon_index--;
+		if (up)
+		{
+			if (hud_adj_addon_idx + 1 < wpn->m_HUD_addons.size())
+				hud_adj_addon_idx++;
+			else
+				hud_adj_addon_idx = 0;
+		}
 		else
-			hud_addon_index = wpn->addons_attached.size() - 1;
+		{
+			if (hud_adj_addon_idx - 1 >= 0)
+				hud_adj_addon_idx--;
+			else
+				hud_adj_addon_idx = wpn->m_HUD_addons.size() - 1;
+		}
+
+	}
+
+	if (hud_adj_adv == 2)
+	{
+		if (wpn->m_HUD_addon_slots.size() < 2) return;
+
+		if (up)
+		{
+			if (hud_adj_slot_idx + 1 < wpn->m_HUD_addon_slots.size())
+				hud_adj_slot_idx++;
+			else
+				hud_adj_slot_idx = 0;
+		}
+		else
+		{
+			if (hud_adj_slot_idx - 1 >= 0)
+				hud_adj_slot_idx--;
+			else
+				hud_adj_slot_idx = wpn->m_HUD_addon_slots.size() - 1;
+		}
+
 	}*/
 }
 
 void CActor::custom_tune_adjust(Ivector _values)
 {
-	/*if (hud_adj_mode == 8 || hud_adj_mode == 9)
+	/*if (hud_adj_adv && (hud_adj_mode == 1 || hud_adj_mode == 2))
 	{
 		CWeapon* wpn = smart_cast<CWeapon*>(inventory().ActiveItem());
-		if (wpn && !wpn->addons_attached.empty() && hud_addon_index < wpn->addons_attached.size())
-		{
-			UWAddon* addn = wpn->addons_attached[hud_addon_index];
-			WeaponAddon* addon = smart_cast<WeaponAddon*>(addn);
 
-			g_player_hud->AddonTune(_values, addon->bone_offset[0][0], addon->bone_offset[0][0], addon->GetSectionName());
+		if (hud_adj_adv == 1)
+		{
+			if (wpn && !wpn->m_HUD_addons.empty() && hud_adj_addon_idx < wpn->m_HUD_addons.size())
+			{
+				auto& addn = wpn->m_HUD_addons[hud_adj_addon_idx];
+				g_player_hud->AddonTune(_values, addn.pos, addn.rot, addn.m_sect_name);
+			}
+		}
+
+		if (hud_adj_adv == 2)
+		{
+			if (wpn && !wpn->m_HUD_addon_slots.empty() && hud_adj_slot_idx < wpn->m_HUD_addon_slots.size())
+			{
+				auto& addn = wpn->m_HUD_addon_slots[hud_adj_slot_idx];
+				g_player_hud->AddonTune(_values, addn.pos, addn.rot, addn.m_slot_name);
+			}
 		}
 	}
-	else 
-		g_player_hud->tune(_values);*/
-
-	g_player_hud->tune(_values);
+	else*/ 
+		g_player_hud->tune(_values);
 }
 
 void CActor::IR_OnKeyboardHold(int cmd)
 {
-	if (hud_adj_mode && pInput->iGetAsyncKeyState(DIK_LSHIFT) && g_player_hud)
+	if (hud_adj_mode && pInput->iGetAsyncKeyState(DIK_LSHIFT) && g_player_hud && g_player_hud->attached_item(hud_adj_item_idx))
 	{	
 		u8 idx = g_player_hud->attached_item(hud_adj_item_idx)->m_parent_hud_item->GetCurrentHudOffsetIdx();
 

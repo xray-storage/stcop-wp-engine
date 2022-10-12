@@ -131,9 +131,12 @@ public:
 	void						StopCurrentAnimWithoutCallback();
 
 	//Mortan: новые параметры для системы аддонов
-	virtual void				UpdateAddonsTransform(bool for_hud = false) {}; // FFT++ Обновление положения аддонов на худе каждый кадр
-	virtual void				UpdateAddonsHudParams() {};                     // FFT++ Обновление параметров худа с помощью аддонов, вероятно не потребуется если будем использовать фейковый скелет
-	bool						NeedUpdateHudParams;                            // FFT++ Флаг обновления параметров с помощью аддонов
+	virtual void				UpdateAddonsSlotTransform() {}; // Обновление положения виртуальных слотов на худе каждый кадр
+	virtual void				UpdateAddonsTransform() {}; // Обновление положения аддонов на худе каждый кадр
+	virtual void                UpdateAddonsVisual() {};	// Обновление визуалов аддонов на худе каждый кадр
+
+	virtual void				UpdateAddonsHudParams() {};                     // Обновление параметров худа с помощью аддонов, вероятно не потребуется если будем использовать фейковый скелет
+	bool						NeedUpdateHudParams;                            // Флаг обновления параметров с помощью аддонов
 
 	IC void						RenderHud				(BOOL B)	{ m_huditem_flags.set(fl_renderhud, B);}
 	IC BOOL						RenderHud				()			{ return m_huditem_flags.test(fl_renderhud);}

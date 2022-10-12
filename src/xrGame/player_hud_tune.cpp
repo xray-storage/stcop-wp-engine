@@ -13,7 +13,9 @@
 
 u32 hud_adj_mode		= 0;
 u32 hud_adj_item_idx	= 0;
-u8 hud_addon_index      = 0;
+//u32 hud_adj_adv			= 0;
+//u32 hud_adj_addon_idx	= 0;
+//u32 hud_adj_slot_idx	= 0;
 // "press SHIFT+NUM 0-return 1-hud_pos 2-hud_rot 3-itm_pos 4-itm_rot 5-fire_point 6-fire_2_point 7-shell_point";
 
 extern ENGINE_API float hud_adj_delta_pos, hud_adj_delta_rot;
@@ -220,14 +222,14 @@ void player_hud::AddonTune(Ivector _values, Fvector& pos_, Fvector& rot_, shared
 
 	bool is_16x9 = UI().is_widescreen();
 
-	if (hud_adj_mode == 8 || hud_adj_mode == 9)
+	if (hud_adj_mode == 1 || hud_adj_mode == 2)
 	{
 		Fvector			diff;
 		diff.set(0, 0, 0);
 
 		float _curr_dr = hud_adj_delta_rot;
 
-		if (hud_adj_mode == 8)
+		if (hud_adj_mode == 1)
 		{
 			if (values.x)	diff.x = (values.x < 0) ? hud_adj_delta_pos : -hud_adj_delta_pos;
 			if (values.y)	diff.y = (values.y > 0) ? hud_adj_delta_pos : -hud_adj_delta_pos;
@@ -236,7 +238,7 @@ void player_hud::AddonTune(Ivector _values, Fvector& pos_, Fvector& rot_, shared
 			pos_.add(diff);
 		}
 
-		if (hud_adj_mode == 9)
+		if (hud_adj_mode == 2)
 		{
 			if (values.x)	diff.x = (values.x > 0) ? _curr_dr : -_curr_dr;
 			if (values.y)	diff.y = (values.y > 0) ? _curr_dr : -_curr_dr;
@@ -248,8 +250,8 @@ void player_hud::AddonTune(Ivector _values, Fvector& pos_, Fvector& rot_, shared
 		if ((values.x) || (values.y) || (values.z))
 		{
 			Msg("[%s]", addon_name.c_str());
-			Msg("hud_addon_pos			= %f,%f,%f",  pos_.x, pos_.y, pos_.z);
-			Msg("hud_addon_rot			= %f,%f,%f", rot_.x, rot_.y, rot_.z);
+			Msg("pos			= %f,%f,%f",  pos_.x, pos_.y, pos_.z);
+			Msg("rot			= %f,%f,%f", rot_.x, rot_.y, rot_.z);
 			Log("-----------");
 		}
 	}
@@ -262,8 +264,8 @@ void player_hud::AddonTune(Ivector _values, Fvector& pos_, Fvector& rot_, shared
 
 		CInifile* pHudCfg = new CInifile(fname, FALSE, FALSE, TRUE);
 
-		pHudCfg->w_string(sect_name,"hud_addon_pos",make_string("%f,%f,%f",pos_.x,pos_.y,pos_.z).c_str());
-		pHudCfg->w_string(sect_name,"hud_addon_rot",make_string("%f,%f,%f",rot_.x,rot_.y,rot_.z).c_str());
+		pHudCfg->w_string(sect_name,"pos",make_string("%f,%f,%f",pos_.x,pos_.y,pos_.z).c_str());
+		pHudCfg->w_string(sect_name,"rot",make_string("%f,%f,%f",rot_.x,rot_.y,rot_.z).c_str());
 
 		//-----------------//
 		xr_delete(pHudCfg);
@@ -279,7 +281,9 @@ void player_hud::tune(Ivector _values)
 
 	bool is_16x9		= UI().is_widescreen();
 
-	if(hud_adj_mode==1 || hud_adj_mode==2)
+
+
+	if(hud_adj_mode==1 || hud_adj_mode==2 || hud_adj_mode == 8 || hud_adj_mode == 9)
 	{
 		Fvector			diff;
 		diff.set		(0,0,0);
@@ -290,10 +294,12 @@ void player_hud::tune(Ivector _values)
 		if(idx)
 			_curr_dr	/= 20.0f;
 
+		if (hud_adj_mode == 8 || hud_adj_mode == 9) idx = 3;
+
 		Fvector& pos_	=(idx!=0)?m_attached_items[hud_adj_item_idx]->hands_offset_pos():m_attached_items[hud_adj_item_idx]->hands_attach_pos();
 		Fvector& rot_	=(idx!=0)?m_attached_items[hud_adj_item_idx]->hands_offset_rot():m_attached_items[hud_adj_item_idx]->hands_attach_rot();
 
-		if(hud_adj_mode==1)
+		if(hud_adj_mode==1 || hud_adj_mode == 8)
 		{
 			if(values.x)	diff.x = (values.x<0)? hud_adj_delta_pos :-hud_adj_delta_pos;
 			if(values.y)	diff.y = (values.y>0)? hud_adj_delta_pos :-hud_adj_delta_pos;
@@ -302,7 +308,7 @@ void player_hud::tune(Ivector _values)
 			pos_.add		(diff);
 		}
 
-		if(hud_adj_mode==2)
+		if(hud_adj_mode==2 || hud_adj_mode == 9)
 		{
 			if(values.x)	diff.x = (values.x>0)?_curr_dr:-_curr_dr;
 			if(values.y)	diff.y = (values.y>0)?_curr_dr:-_curr_dr;
@@ -333,15 +339,14 @@ void player_hud::tune(Ivector _values)
 				Msg("gl_hud_offset_rot%s				= %f,%f,%f",(is_16x9)?"_16x9":"",  rot_.x, rot_.y, rot_.z);
 				Log("-----------");
 			}
+			/*if (idx == 3)
+			{
+				Msg("[%s]", m_attached_items[hud_adj_item_idx]->m_sect_name.c_str());
+				Msg("scope aim_offset_pos%s				= %f,%f,%f", (is_16x9) ? "_16x9" : "", pos_.x, pos_.y, pos_.z);
+				Msg("scope aim_offset_rot%s				= %f,%f,%f", (is_16x9) ? "_16x9" : "", rot_.x, rot_.y, rot_.z);
+				Log("-----------");
+			}*/
 		}
-	}
-	else if(hud_adj_mode==8 || hud_adj_mode==9)
-	{
-		if(hud_adj_mode==8 && (values.z) )
-			hud_adj_delta_pos += (values.z>0)?0.001f:-0.001f;
-		
-		if(hud_adj_mode==9 && (values.z) )
-			hud_adj_delta_rot += (values.z>0)?0.1f:-0.1f;
 	}
 	else
 	{
@@ -481,6 +486,19 @@ void hud_draw_adjust_mode()
 			break;
 
 		};
+
+		/*if (hud_adj_adv == 1)
+		{
+			if(hud_adj_mode == 1) _text = "adjusting addon POSITION";
+			if(hud_adj_mode == 2) _text = "adjusting addon ROTATION";
+		}
+
+		if (hud_adj_adv == 2)
+		{
+			if (hud_adj_mode == 1) _text = "adjusting hud_slot POSITION";
+			if (hud_adj_mode == 2) _text = "adjusting hud_slot ROTATION";
+		}*/
+
 		if(_text)
 		{
 			CGameFont* F		= UI().Font().pFontDI;
@@ -497,35 +515,40 @@ void hud_draw_adjust_mode()
 
 void hud_adjust_mode_keyb(int dik)
 {
-	if(pInput->iGetAsyncKeyState(DIK_LSHIFT))
+	if (pInput->iGetAsyncKeyState(DIK_LSHIFT))
 	{
-		if(dik==DIK_NUMPAD0)
+		if (dik == DIK_NUMPAD0)
 			hud_adj_mode = 0;
-		if(dik==DIK_NUMPAD1)
+		if (dik == DIK_NUMPAD1)
 			hud_adj_mode = 1;
-		if(dik==DIK_NUMPAD2)
+		if (dik == DIK_NUMPAD2)
 			hud_adj_mode = 2;
-		if(dik==DIK_NUMPAD3)
+		if (dik == DIK_NUMPAD3)
 			hud_adj_mode = 3;
-		if(dik==DIK_NUMPAD4)
+		if (dik == DIK_NUMPAD4)
 			hud_adj_mode = 4;
-		if(dik==DIK_NUMPAD5)
+		if (dik == DIK_NUMPAD5)
 			hud_adj_mode = 5;
-		if(dik==DIK_NUMPAD6)
+		if (dik == DIK_NUMPAD6)
 			hud_adj_mode = 6;
-		if(dik==DIK_NUMPAD7)
+		if (dik == DIK_NUMPAD7)
 			hud_adj_mode = 7;
-		if(dik==DIK_NUMPAD8)
+		if (dik == DIK_NUMPAD8)
 			hud_adj_mode = 8; // Заменено для настройки аддонов!!!
-		if(dik==DIK_NUMPAD9)
+		if (dik == DIK_NUMPAD9)
 			hud_adj_mode = 9; // 
 	}
-	if(pInput->iGetAsyncKeyState(DIK_LCONTROL))
+	if (pInput->iGetAsyncKeyState(DIK_LCONTROL))
 	{
 		if (dik == DIK_NUMPAD0)
 			hud_adj_item_idx = 0;
 		if (dik == DIK_NUMPAD1)
 			hud_adj_item_idx = 1;
-
+		//if (dik == DIK_NUMPAD2)
+		//	hud_adj_adv = 0; // Переключение режима настройки аддонов
+		//if (dik == DIK_NUMPAD3)
+		//	hud_adj_adv = 1; // Режим настройки слотов для аддонов
+		//if (dik == DIK_NUMPAD4)
+		//	hud_adj_adv = 2;
 	}
 }
