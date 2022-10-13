@@ -83,7 +83,5 @@ void	dxRender_Visual::Copy(dxRender_Visual *pFrom)
 #ifdef _EDITOR
 	PCOPY(desc);
 #endif
-#ifdef DEBUG
 	PCOPY(dbg_name);
-#endif
 }
