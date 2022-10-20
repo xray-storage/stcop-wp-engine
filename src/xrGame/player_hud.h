@@ -140,8 +140,6 @@ public:
 
 	// Hud adjusting here
 	void			tune(Ivector values);
-	void            AddonTune(Ivector values, Fvector& addon_pos, Fvector& addon_rot, shared_str addon_name);
-
 
 	void			calc_transform		(u16 attach_slot_idx, const Fmatrix& offset, Fmatrix& result);
 	u32				motion_length		(const MotionID& M, const CMotionDef*& md, float speed);
