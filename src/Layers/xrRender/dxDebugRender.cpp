@@ -2,7 +2,7 @@
 
 #include "dxDebugRender.h"
 #include "dxUIShader.h"
-
+#include "dxRenderDeviceRender.h"
 dxDebugRender DebugRenderImpl;
 dxDebugRender DebugRenderImpl_1;
 dxDebugRender::dxDebugRender()
@@ -17,6 +17,14 @@ void dxDebugRender::Render()
 		return;
 
 	RCache.set_xform_world			(Fidentity);
+
+#if defined(USE_DX10) || defined(USE_DX11)
+	RCache.set_Shader(dxRenderDeviceRender::Instance().m_WireShader);
+	const u32 color = m_line_vertices[0].color;
+	RCache.set_c("tfactor", float(color_get_R(color)) / 255.f, float(color_get_G(color)) / 255.f, \
+		float(color_get_B(color)) / 255.f, float(color_get_A(color)) / 255.f);
+#endif	//	USE_DX10
+
 	RCache.dbg_Draw					(D3DPT_LINELIST,&*m_line_vertices.begin(),m_line_vertices.size(),&*m_line_indices.begin(),m_line_indices.size()/2);
 	m_line_vertices.resize			(0);
 	m_line_indices.resize			(0);

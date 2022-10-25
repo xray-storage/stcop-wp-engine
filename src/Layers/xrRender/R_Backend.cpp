@@ -132,7 +132,8 @@ void CBackend::OnDeviceCreate	()
 	// streams
 	Vertex.Create		();
 	Index.Create		();
-
+	// Debug Draw
+	InitializeDebugDraw();
 	// invalidate caching
 	Invalidate			();
 }
@@ -150,6 +151,8 @@ void CBackend::OnDeviceDestroy()
 #if defined(USE_DX10) || defined(USE_DX11)
 	//DestroyConstantBuffers();
 #endif	//	USE_DX10
+	// Debug Draw
+	DestroyDebugDraw();
 }
 
 #if defined(USE_DX10) || defined(USE_DX11)
