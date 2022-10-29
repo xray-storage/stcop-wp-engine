@@ -8,6 +8,7 @@
 #define MMNOAUX
 #define MMNOMIXER
 #define MMNOJOY
+//#define OPT_Z
 #include <mmsystem.h>
 // d3dx9.h
 #include <d3dx9.h>
@@ -235,6 +236,8 @@ bool CRenderDevice::bMainMenuActive()
     return  g_pGamePersistent && g_pGamePersistent->m_pMainMenu && g_pGamePersistent->m_pMainMenu->IsActive();
 }
 
+#define OPT_Z
+
 void CRenderDevice::on_idle()
 {
     if (!b_is_Ready)
@@ -276,6 +279,27 @@ void CRenderDevice::on_idle()
         mView.build_camera_dir(vCameraPosition, vCameraDirection, vCameraTop);
     }
 
+	//if (m_bMakeLevelMap)
+	//{
+	//	// build camera matrix
+	//	Msg("DDDDFF");
+	//	Fbox bb = curr_lm_fbox;
+	//	bb.getcenter(vCameraPosition);
+
+	//	vCameraDirection.set(0.f, -1.f, EPS_S);
+	//	vCameraTop.set(0.f, 0.f, 1.f);
+	//	vCameraRight.set(1.f, 0.f, 0.f);
+	//	mView.build_camera_dir(vCameraPosition, vCameraDirection, vCameraTop);
+
+	//	bb.xform(mView);
+	//	// build project matrix
+	//	mProject.build_projection_ortho(bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.min.z, bb.max.z);
+
+	//	//Device.mFullTransform.mul(Device.mProject, Device.mView);
+	//	//D3DXMatrixInverse((D3DXMATRIX*)&Device.mInvFullTransform, 0, (D3DXMATRIX*)&Device.mFullTransform);
+	//	//m_bMakeLevelMap = false;
+	//}
+
 	// Render Viewports
 	if (Device.m_SecondViewport.IsSVPActive() && Device.m_SecondViewport.IsSVPFrame())
 	{
@@ -296,26 +320,23 @@ void CRenderDevice::on_idle()
 	Statistic->RenderTOTAL_Real.Begin();
 
     u32 t_width = Device.dwWidth, t_height = Device.dwHeight;
+
+#ifdef OPT_Z
 	for (size_t i = 0; i < Render->viewPortsThisFrame.size(); i++)
 	{
 		Render->currentViewPort = Render->viewPortsThisFrame[i];
 		Render->needPresenting = (Render->currentViewPort == MAIN_VIEWPORT) ? true : false;
 
-        if (Render->currentViewPort == SECONDARY_WEAPON_SCOPE && (psDeviceFlags.test(rsR3) || psDeviceFlags.test(rsR4)))
-        {
-            Device.dwWidth = m_SecondViewport.screenWidth;
-            Device.dwHeight = m_SecondViewport.screenHeight;
-        }
+		if (Render->currentViewPort == SECONDARY_WEAPON_SCOPE && (psDeviceFlags.test(rsR3) || psDeviceFlags.test(rsR4)))
+		{
+			Device.dwWidth = m_SecondViewport.screenWidth;
+			Device.dwHeight = m_SecondViewport.screenHeight;
+		}
 
 		if (g_pGameLevel)
-		g_pGameLevel->ApplyCamera(); // Apply camera params of vp, so that we create a correct full transform matrix
+			g_pGameLevel->ApplyCamera(); // Apply camera params of vp, so that we create a correct full transform matrix
 
-        m_pRender->SetCacheXform(mView, mProject);
-
-		//// Matrices
-		//mFullTransform.mul(mProject, mView);
-		//m_pRender->SetCacheXform(mView, mProject);
-		//D3DXMatrixInverse((D3DXMATRIX*)&mInvFullTransform, 0, (D3DXMATRIX*)&mFullTransform);
+		m_pRender->SetCacheXform(mView, mProject);
 
 		if (Render->currentViewPort == MAIN_VIEWPORT && Device.m_SecondViewport.IsSVPActive()) // need to save main vp stuff for next frame
 		{
@@ -351,12 +372,15 @@ void CRenderDevice::on_idle()
 			}
 		}
 
-        if ((psDeviceFlags.test(rsR3) || psDeviceFlags.test(rsR4)))
-        {
-            Device.dwWidth = t_width;
-            Device.dwHeight = t_height;
-        }
+		if ((psDeviceFlags.test(rsR3) || psDeviceFlags.test(rsR4)))
+		{
+			Device.dwWidth = t_width;
+			Device.dwHeight = t_height;
+		}
 	}
+#endif // 0
+
+	
 	// Restore main vp saved stuff for the needs of new frame
     if (Device.m_SecondViewport.IsSVPActive())
     {
