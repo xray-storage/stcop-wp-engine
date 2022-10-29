@@ -205,7 +205,11 @@ void CRender::ScreenshotImpl	(ScreenshotMode mode, LPCSTR name, CMemoryWriter* m
 				HW.pContext->CopyResource(pTex, pSrcTexture);
 
 				D3D_MAPPED_TEXTURE2D MappedData;
+#ifdef USE_DX11
 				HW.pContext->Map(pTex, 0, D3D_MAP_READ, 0, &MappedData);
+#else
+				pTex->Map(0, D3D_MAP_READ, 0, &MappedData);
+#endif
 				// Swap r and b, but don't kill alpha
 				{
 					u32* pPixel = (u32*)MappedData.pData;
@@ -219,7 +223,11 @@ void CRender::ScreenshotImpl	(ScreenshotMode mode, LPCSTR name, CMemoryWriter* m
 				}
 				u32* data = (u32*)xr_malloc(Device.dwHeight * Device.dwHeight * 4);
 				imf_Process(data, Device.dwHeight, Device.dwHeight, (u32*)MappedData.pData, Device.dwWidth, Device.dwHeight, imf_lanczos3);
+#ifdef USE_DX11
 				HW.pContext->Unmap(pTex, 0);
+#else
+				pTex->Unmap(0);
+#endif
 
 				Image img;
 				img.Create(u16(Device.dwHeight), u16(Device.dwHeight), data, ImageFormat::RGBA8);
