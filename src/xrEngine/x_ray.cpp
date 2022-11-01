@@ -525,25 +525,29 @@ HWND WINAPI ShowSplash(HINSTANCE hInstance, int nCmdShow)
 
     HBITMAP hBmp = CreateCompatibleBitmap(hdcScreen, splashWidth, splashHeight);
     HBITMAP hBmpOld = (HBITMAP)SelectObject(hDC, hBmp);
+
+	BLENDFUNCTION blend = { 0 };
+	blend.SourceConstantAlpha = 255;
+
     //рисуем картиночку
-    for (int i = 0; i < img.GetWidth(); i++)
-    {
-        for (int j = 0; j < img.GetHeight(); j++)
-        {
-            BYTE* ptr = (BYTE*)img.GetPixelAddress(i, j);
-            ptr[0] = ((ptr[0] * ptr[3]) + 127) / 255;
-            ptr[1] = ((ptr[1] * ptr[3]) + 127) / 255;
-            ptr[2] = ((ptr[2] * ptr[3]) + 127) / 255;
-        }
-    }
+	if (img.GetBPP() == 32)
+	{
+		blend.AlphaFormat = AC_SRC_ALPHA;
+		blend.BlendOp = AC_SRC_OVER;
+
+		for (int i = 0; i < img.GetWidth(); i++)
+		{
+			for (int j = 0; j < img.GetHeight(); j++)
+			{
+				BYTE* ptr = (BYTE*)img.GetPixelAddress(i, j);
+				ptr[0] = ((ptr[0] * ptr[3]) + 127) / 255;
+				ptr[1] = ((ptr[1] * ptr[3]) + 127) / 255;
+				ptr[2] = ((ptr[2] * ptr[3]) + 127) / 255;
+			}
+		}
+	}
 
     img.AlphaBlend(hDC, 0, 0, splashWidth, splashHeight, 0, 0, splashWidth, splashHeight);
-
-    //alpha
-    BLENDFUNCTION blend = { 0 };
-    blend.BlendOp = AC_SRC_OVER;
-    blend.SourceConstantAlpha = 255;
-    blend.AlphaFormat = AC_SRC_ALPHA;
 
     POINT ptPos = { 0, 0 };
     SIZE sizeWnd = { splashWidth, splashHeight };
@@ -562,55 +566,6 @@ HWND WINAPI ShowSplash(HINSTANCE hInstance, int nCmdShow)
 
     return hWnd;
 }
-
-void SetSplashImage(HWND hwndSplash, HBITMAP hbmpSplash)
-{
-    // get the size of the bitmap
-
-    BITMAP bm;
-    GetObject(hbmpSplash, sizeof(bm), &bm);
-    SIZE sizeSplash = { bm.bmWidth, bm.bmHeight };
-
-    // get the primary monitor's info
-
-    POINT ptZero = { 0 };
-    HMONITOR hmonPrimary = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
-    MONITORINFO monitorinfo = { 0 };
-    monitorinfo.cbSize = sizeof(monitorinfo);
-    GetMonitorInfo(hmonPrimary, &monitorinfo);
-
-    // center the splash screen in the middle of the primary work area
-
-    const RECT& rcWork = monitorinfo.rcWork;
-    POINT ptOrigin;
-    ptOrigin.x = rcWork.left + (rcWork.right - rcWork.left - sizeSplash.cx) / 2;
-    ptOrigin.y = rcWork.top + (rcWork.bottom - rcWork.top - sizeSplash.cy) / 2;
-
-    // create a memory DC holding the splash bitmap
-
-    HDC hdcScreen = GetDC(NULL);
-    HDC hdcMem = CreateCompatibleDC(hdcScreen);
-    HBITMAP hbmpOld = (HBITMAP)SelectObject(hdcMem, hbmpSplash);
-
-    // use the source image's alpha channel for blending
-
-    BLENDFUNCTION blend = { 0 };
-    blend.BlendOp = AC_SRC_OVER;
-    blend.SourceConstantAlpha = 255;
-    blend.AlphaFormat = AC_SRC_ALPHA;
-
-    // paint the window (in the right location) with the alpha-blended bitmap
-
-    UpdateLayeredWindow(hwndSplash, hdcScreen, &ptOrigin, &sizeSplash,
-        hdcMem, &ptZero, RGB(0, 0, 0), &blend, ULW_ALPHA);
-
-    // delete temporary objects
-
-    SelectObject(hdcMem, hbmpOld);
-    DeleteDC(hdcMem);
-    ReleaseDC(NULL, hdcScreen);
-}
-
 
 static INT_PTR CALLBACK logDlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -933,60 +888,13 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
 #else // DEDICATED_SERVER
     g_dedicated_server = true;
 #endif // DEDICATED_SERVER
-
-    //if (strstr(Core.Params, "-cpu_test_fix"))
-        //SetThreadAffinityMask(GetCurrentThread(), 1);
-    //SetThreadAffinityMask(GetCurrentThread(), 1);
-
-    // Title window
-
-
-
-    //IStream* pStream = CreateStreamOnResource(MAKEINTRESOURCE(IDB_PNG1), _T("PNG"));
-
-    //WICBitmapSource* res = LoadBitmapFromStream(CreateStreamOnResource(MAKEINTRESOURCE(IDB_PNG1), _T("PNG")));
-
-    //HBITMAP img = LoadSplashImage();
-    //image.
-
     RegisterWindowClass(hInstance);
     //logoWindow = CreateSplashWindow(hInstance);
     logoWindow = ShowSplash(hInstance, nCmdShow);
 
     SendMessage(logoWindow, WM_DESTROY, 0, 0);
 
-    //SendMessageTimeout(logoWindow, WM_DESTROY,3)
-    //SetSplashImage(logoWindow, image);
-
-    //logoWindow = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STARTUP), 0, logDlgProc);
-
-
-    //HWND logoPicture = GetDlgItem(logoWindow, IDC_STATIC_LOGO);
-    //HWND logoPicture2 = GetDlgItem(logoWindow, IDD_STARTUP);
-    //RECT logoRect;
-    //GetWindowRect(logoPicture, &logoRect);
-
-    //SetWindowLong(logoWindow, GetWindowLong(logoWindow, GWL_EXSTYLE), GetWindowLong(logoWindow, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
-    //SetWindowLong(logoPicture, GetWindowLong(logoPicture, GWL_EXSTYLE), GetWindowLong(logoPicture, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
-
-    //SetLayeredWindowAttributes(logoPicture, 0, 0, LWA_ALPHA);
-
-    /*SetWindowPos(
-        logoWindow,
-#ifndef DEBUG
-        HWND_TOPMOST,
-#else
-        HWND_NOTOPMOST,
-#endif // NDEBUG
-        0,
-        0,
-        logoRect.right - logoRect.left,
-        logoRect.bottom - logoRect.top,
-        SWP_NOMOVE | SWP_SHOWWINDOW// | SWP_NOSIZE
-    );
-    UpdateWindow(logoWindow);*/
-
-    // AVI
+   
     g_bIntroFinished = TRUE;
 
     g_sLaunchOnExit_app[0] = NULL;
